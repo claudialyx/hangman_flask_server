@@ -4,7 +4,6 @@ from models.user import *
 
 users_api_blueprint = Blueprint('users_api', __name__,)
 
-
 def get_user_id():
     #get current user
     auth_header = request.headers.get('Authorization')
@@ -36,38 +35,29 @@ def read():
     user_id = get_user_id()
     user = User.select().where(User.id == user_id)
     # breakpoint()
-    user1 = [{"id":int(user[0].id),"username": user[0].username, "email": user[0].email}]
+    user1 = {"id":int(user[0].id),"username": user[0].username, "email": user[0].email}
     return jsonify(user1)
 
 @users_api_blueprint.route('/new', methods=['POST'])
 def create():
     # get the post data
     post_data = request.get_json()
-
+    # breakpoint()
     try:
         new_user = User(
             username=post_data['username'],
             email=post_data['email'].lower(),
             password=generate_password_hash(post_data['password'])
         )
-
     except:
-        responseObject = {
-            'status': 'failed',
-            'message': ['All fields are required!']
+        responseObject={
+            'status':'failed',
+            'message':['username or password is not unique']
         }
-        return make_response(jsonify(responseObject)), 400
+        return make_response(jsonify(responseObject)),400
 
-    else:
-        if not new_user.save():
-            responseObject = {
-                'status': 'failed',
-                'message': new_user.errors
-            }
-
-            return make_response(jsonify(responseObject)), 400
-
-        else:
+    else: 
+        if new_user.save():
             auth_token = new_user.encode_auth_token(new_user.id)
             responseObject = {
                 'status': 'success',
@@ -75,8 +65,14 @@ def create():
                 'auth_token': auth_token.decode(),
                 'user': {"id": int(new_user.id), "username": new_user.username}
             }
-
             return make_response(jsonify(responseObject)), 201
+
+        else:
+            responseObject = {
+                'status': 'failed',
+                'message': new_user.errors
+            }
+            return make_response(jsonify(responseObject)), 400
 
 @users_api_blueprint.route('/update', methods=['POST'])
 def update():
@@ -156,6 +152,6 @@ def sign_in():
     else:
         responseObject = {
             'status': 'fail',
-            'message': 'Some error occurred. Please try again.'
+            'message': 'Hey, username or password is incorrect. Please try again'
         }
         return make_response(jsonify(responseObject)), 401
