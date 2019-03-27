@@ -18,7 +18,7 @@ def get_user_id():
             'message': 'No authorization header found'
         }
         return make_response(jsonify(responseObject)), 400
-
+    # breakpoint()
     user_id = User.decode_auth_token(auth_token)
     return user_id
 
@@ -31,12 +31,13 @@ def index():
     return jsonify(users)
 
 @users_api_blueprint.route('/read', methods=['GET'])
-# get 1 user data
+# # get 1 user data
 def read():
     user_id = get_user_id()
     user = User.select().where(User.id == user_id)
-    user = [{"id":int(user[0].id),"username": user[0].username, "email": user[0].email}]
-    return jsonify(user)
+    # breakpoint()
+    user1 = [{"id":int(user[0].id),"username": user[0].username, "email": user[0].email}]
+    return jsonify(user1)
 
 @users_api_blueprint.route('/new', methods=['POST'])
 def create():
@@ -80,7 +81,7 @@ def create():
 @users_api_blueprint.route('/update', methods=['POST'])
 def update():
     user_id = get_user_id()
-    breakpoint()
+    # breakpoint()
     post_data=request.get_json()
     # breakpoint()
     user_username=post_data['username']
